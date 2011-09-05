@@ -1,0 +1,13 @@
+.*.swp
+.DS_Store
+.build/
+.buildpath
+.cache
+.idea
+.project
+.settings
+*.pyc
+build/
+tags
+!tags/
+tmp/
