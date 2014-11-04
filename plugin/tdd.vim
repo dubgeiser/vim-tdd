@@ -1,7 +1,6 @@
 " Description: TDD plugin
 "           Runs a file with tests and shows a green or red bar depending on
 "           the fact that the test(s) passed or failed.
-"
 " Author: P. Juchtmans
 " License: http://sam.zoy.org/wtfpl/COPYING
 "          No warranties, expressed or implied.
@@ -26,7 +25,7 @@
 "
 "       To run the test:
 "
-"           :call Tdd_RunTest()
+"           :TddRunTest
 "
 "       This will then save your current makeprg setting, set g:Tdd_makeprg as
 "       the makeprg, execute Vim's make, match the output against the list of
@@ -37,7 +36,10 @@
 "       Note that it's best to define a key map that runs the current file in
 "       the current buffer:
 "
-"           :nmap <Leader>t :call Tdd_RunTest()
+"           :nmap <Leader>t :TddRunTest<cr>
+"
+"       If no key mapping exists executing TddRunTest, <leader>t is mapped (if
+"       possible)
 "
 "
 " Known Limitations:
@@ -52,13 +54,13 @@
 "     were hoping for.
 "   - Alternating between buffers with code in different languages needs
 "     manually re-setting the filetype, ex: edit php file switch to buffer
-"     with python code, go back to the php file, :call Tdd_RunTest()
+"     with python code, go back to the php file, :call tdd#run_test()
 "     and a red bar is shown with 'Syntax Error' message.  :set ft=php before
 "     running again solves this.
 "   - Yes, I am aware of the tragic irony that this plugin does not
 "     have tests.
 "
-" To Do:
+" TODO:
 "   - Better error handling for things like checking if 'Tdd_makeprg' is
 "     defined.  Maybe we need to supply some defaults?
 "   - UI screwed when used in vim (G-/MacVim are ok though)?
@@ -72,13 +74,13 @@ let tdd_loaded = 1
 
 
 " Run test, ie. call make with the makeprg set to g:Tdd_makeprg
-fun! Tdd_RunTest()
-    call s:runTest()
-    let result = s:processTestOuput()
-    call s:showBar(result.type, result.message)
+fun! tdd#run_test()
+    call s:run_test()
+    let result = s:process_test_output()
+    call s:show_bar(result.type, result.message)
 endf
 
-fun! s:runTest()
+fun! s:run_test()
     let save_makeprg=&makeprg
     exec "set makeprg=" . escape(g:Tdd_makeprg, ' ')
     silent exec "make"
@@ -94,7 +96,7 @@ endf
 "                   'Failure', or the last line of the test run output, 'type'
 "                   will be 'Success'.
 "   }
-fun! s:processTestOuput()
+fun! s:process_test_output()
     let result = {}
     for each in getqflist()
         if each.valid == 1
@@ -105,7 +107,7 @@ fun! s:processTestOuput()
 endf
 
 " 'success_or_failure' string Either 'Success' or 'Failure'
-fun! s:showBar(success_or_failure, message)
+fun! s:show_bar(success_or_failure, message)
     hi Tdd_Success ctermfg=white ctermbg=green guifg=white guibg=#256414
     hi Tdd_Failure ctermfg=white ctermbg=red guifg=white guibg=#dd2212
     exec "echohl Tdd_" . a:success_or_failure
@@ -115,3 +117,8 @@ fun! s:showBar(success_or_failure, message)
     echohl
 endf
 
+
+command TddRunTest call tdd#run_test()
+if !hasmapto('TddRunTest') && mapcheck('<Leader>t', 'n') == ""
+    nnoremap <Leader>t :TddRunTest<cr>
+endif
