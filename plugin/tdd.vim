@@ -1,7 +1,7 @@
 " Description: TDD plugin
 "           Runs a file with tests and shows a green or red bar depending on
 "           the fact that the test(s) passed or failed.
-" Author: P. Juchtmans
+" Author: <dubgeiser+vimtdd@gmail.com>
 " License: http://sam.zoy.org/wtfpl/COPYING
 "          No warranties, expressed or implied.
 "
