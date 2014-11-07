@@ -13,12 +13,10 @@
 "       
 "       Then define the test runner in g:Tdd_makeprg, which is actually a
 "       makeprg definition that will be used for running the tests.
+"       For php, this will probably be 'phpunit' or 'php' when using
+"       SimpleTest.
 "
-"           let g:Tdd_makeprg='php ~/Projects/myproject/alltests.php'
-"
-"       or (an ok default imo), which will run the file in the current buffer:
-"
-"           let g:Tdd_makeprg='php %'
+"           let g:Tdd_makeprg='phpunit'
 "
 "       tdd.vim will remember the current makeprg setting and will restore
 "       that after the test is run.
@@ -33,14 +31,24 @@
 "       matches, it shows a red bar, otherwise a green one.  After that the
 "       original makeprg setting is restored.
 "
-"       Note that it's best to define a key map that runs the current file in
-"       the current buffer:
+"       'TddRunTest' runs the current test file, if no current test file was
+"       set yet, the file in the active buffer is set as the current test.
+"
+"       To set a new current test load the test file in the active buffer and
+"       execute:
+"
+"           :TddSetCurrent
+"
+"       Alternatively, manually set the variable 'g:tdd_current_test'
+"
+"       For a faster TDD cycle, it's best to map some quick keys to the Tdd*
+"       commands, ex:
 "
 "           :nmap <Leader>t :TddRunTest<cr>
+"           :nmap <Leader>c :TddSetCurrent<cr>
 "
-"       If no key mapping exists executing TddRunTest, <leader>t is mapped (if
-"       possible)
-"
+"       By default (if necessary and possible), tdd.vim maps <leader>t to
+"       ':TddRunTest'.  ':TddSetCurrent' is not mapped.
 "
 " Known Limitations:
 "   - Only tested in Gvim and MacVim with:
@@ -80,9 +88,19 @@ fun! tdd#run_test()
     call s:show_bar(result.type, result.message)
 endf
 
+" Set the file in the active buffer as the current test to run.
+fun! tdd#set_current()
+    let g:tdd_current_test = bufname("%")
+endf
+
 fun! s:run_test()
     let save_makeprg=&makeprg
-    exec "set makeprg=" . escape(g:Tdd_makeprg, ' ')
+
+    if !exists('g:tdd_current_test')
+        call tdd#set_current()
+    endif
+
+    exec "set makeprg=" . escape(g:Tdd_makeprg . ' ' . g:tdd_current_test, ' ')
     silent exec "make"
     silent !echo
     exec "set makeprg=" . escape(save_makeprg, ' ')
@@ -119,6 +137,8 @@ endf
 
 
 command TddRunTest call tdd#run_test()
+command TddSetCurrent call tdd#set_current()
+
 if !hasmapto('TddRunTest') && mapcheck('<Leader>t', 'n') == ""
     nnoremap <Leader>t :TddRunTest<cr>
 endif
