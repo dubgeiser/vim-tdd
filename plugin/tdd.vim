@@ -1,16 +1,18 @@
 " Description: TDD plugin
 "           Runs a file with tests and shows a green or red bar depending on
 "           the fact that the test(s) passed or failed.
-" Author: <dubgeiser+vimtdd@gmail.com>
+" Author: <dubgeiser@gmail.com>
 " License: http://sam.zoy.org/wtfpl/COPYING
 "          No warranties, expressed or implied.
+"
+" TODO rewrite the rest of this doc comment
 "
 " Usage: In the ftplugin directory of your vim configuration, add an
 "       errorformat for the output of your test runner that you use.  You can
 "       add an errorformat like this (note the + sign):
 "
 "           set errorformat+=%m\ at\ \[%f\ line\ %l]
-"       
+"
 "       Then define the test runner in g:Tdd_makeprg, which is actually a
 "       makeprg definition that will be used for running the tests.
 "       For php, this will probably be 'phpunit' or 'php' when using
@@ -23,7 +25,7 @@
 "
 "       To run the test:
 "
-"           :TddRunTest
+"           :RunTest
 "
 "       This will then save your current makeprg setting, set g:Tdd_makeprg as
 "       the makeprg, execute Vim's make, match the output against the list of
@@ -31,24 +33,24 @@
 "       matches, it shows a red bar, otherwise a green one.  After that the
 "       original makeprg setting is restored.
 "
-"       'TddRunTest' runs the current test file, if no current test file was
+"       'RunTest' runs the current test file, if no current test file was
 "       set yet, the file in the active buffer is set as the current test.
 "
 "       To set a new current test load the test file in the active buffer and
 "       execute:
 "
-"           :TddSetCurrent
+"           :SetTest
 "
 "       Alternatively, manually set the variable 'g:tdd_current_test'
 "
 "       For a faster TDD cycle, it's best to map some quick keys to the Tdd*
 "       commands, ex:
 "
-"           :nmap <Leader>t :TddRunTest<cr>
-"           :nmap <Leader>c :TddSetCurrent<cr>
+"           :nmap <Leader>t :RunTest<cr>
+"           :nmap <Leader>c :SetTest<cr>
 "
 "       By default (if necessary and possible), tdd.vim maps <leader>t to
-"       ':TddRunTest'.  ':TddSetCurrent' is not mapped.
+"       ':RunTest'.  ':SetTest' is not mapped.
 "
 " Known Limitations:
 "   - Only tested in Gvim and MacVim with:
@@ -62,7 +64,7 @@
 "     were hoping for.
 "   - Alternating between buffers with code in different languages needs
 "     manually re-setting the filetype, ex: edit php file switch to buffer
-"     with python code, go back to the php file, :call tdd#run_test()
+"     with python code, go back to the php file, :call RunTest()
 "     and a red bar is shown with 'Syntax Error' message.  :set ft=php before
 "     running again solves this.
 "   - Yes, I am aware of the tragic irony that this plugin does not
@@ -75,36 +77,30 @@
 "   - Investigate :help write-compiler-plugin
 
 
-if exists('tdd_loaded') || &cp || version < 700
+if exists('g:tdd_loaded') || &cp || version < 700
     finish
 endif
-let tdd_loaded = 1
+let g:tdd_loaded = 1
 
 
-" Run test, ie. call make with the makeprg set to g:Tdd_makeprg
-fun! tdd#run_test()
-    call s:run_test()
-    let result = s:process_test_output()
-    call s:show_bar(result.type, result.message)
-endf
-
-" Set the file in the active buffer as the current test to run.
-fun! tdd#set_current()
-    let g:tdd_current_test = bufname("%")
-endf
-
-fun! s:run_test()
+" Run the current test, if it is not (yet) defined, try to find it.
+function! RunTest() abort
     let save_makeprg=&makeprg
-
     if !exists('g:tdd_current_test')
-        call tdd#set_current()
+        call SetTest()
     endif
-
     exec "set makeprg=" . escape(g:Tdd_makeprg . ' ' . g:tdd_current_test, ' ')
     silent exec "make"
     silent !echo
     exec "set makeprg=" . escape(save_makeprg, ' ')
-endf
+    let result = s:ProcessTestOutput()
+    call s:ShowTestResult(result.type, result.message)
+endfunction
+
+" Set the file in the active buffer as the current test to run.
+function! SetTest() abort
+    let g:tdd_current_test = bufname("%")
+endfunction
 
 " Process the output of the test run.
 " Return following Dictionary:
@@ -114,7 +110,7 @@ endf
 "                   'Failure', or the last line of the test run output, 'type'
 "                   will be 'Success'.
 "   }
-fun! s:process_test_output()
+function! s:ProcessTestOutput() abort
     let result = {}
     for each in getqflist()
         if each.valid == 1
@@ -122,10 +118,10 @@ fun! s:process_test_output()
         endif
     endfor
     return {'type' : 'Success', 'message' : each.text}
-endf
+endfunction
 
 " 'success_or_failure' string Either 'Success' or 'Failure'
-fun! s:show_bar(success_or_failure, message)
+fun! s:ShowTestResult(success_or_failure, message)
     hi Tdd_Success ctermfg=white ctermbg=green guifg=white guibg=#256414
     hi Tdd_Failure ctermfg=white ctermbg=red guifg=white guibg=#dd2212
     exec "echohl Tdd_" . a:success_or_failure
@@ -136,9 +132,9 @@ fun! s:show_bar(success_or_failure, message)
 endf
 
 
-command TddRunTest call tdd#run_test()
-command TddSetCurrent call tdd#set_current()
+command RunTest call RunTest()
+command SetTest call SetTest()
 
-if !hasmapto('TddRunTest') && mapcheck('<Leader>t', 'n') == ""
-    nnoremap <Leader>t :TddRunTest<cr>
+if !hasmapto('RunTest') && mapcheck('<Leader>t', 'n') == ""
+    nnoremap <Leader>t :RunTest<cr>
 endif
