@@ -17,6 +17,14 @@ results back to the |quickfix| window.
 
 USAGE                                                              *tdd-usage*
 
+Execute |:RunTest| to run the current test, if all goes well, a green bar is
+shown.  If one or more tests fail, a red bar is shown, together with a list of
+failures and/or errors.
+
+The current test can be whatever; one test method, a unit test, a whole test
+suite, etc... The current test can be set with |:SetTest| whenever |:RunTest|
+is executed, it will run the test that has been set last with |:SetTest|
+
 tdd comes with some predefined settings for running tests, mainly to support
 PHPUnit and PyUnit.
 
