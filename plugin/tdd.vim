@@ -130,7 +130,7 @@ function! s:ProcessTestOutput() abort
 endfunction
 
 " 'success_or_failure' string Either 'Success' or 'Failure'
-fun! s:ShowTestResult(success_or_failure, message)
+function! s:ShowTestResult(success_or_failure, message) abort
     hi Tdd_Success ctermfg=white ctermbg=green guifg=white guibg=#256414
     hi Tdd_Failure ctermfg=white ctermbg=red guifg=white guibg=#dd2212
     exec "echohl Tdd_" . a:success_or_failure
@@ -138,7 +138,7 @@ fun! s:ShowTestResult(success_or_failure, message)
     " -1 because we don't want a blank line
     echon repeat(" ", &columns - len(a:message) - 1)
     echohl
-endf
+endfunction
 
 
 command RunTest call RunTest()
