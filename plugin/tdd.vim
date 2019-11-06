@@ -84,6 +84,15 @@ let g:tdd_loaded = 1
 
 
 " Run the current test, if it is not (yet) defined, try to find it.
+" Behaviour:
+" if the current buffer is a test file:
+"   override current_test with it
+" if no current_test:
+"   try to determine/guess current_test.
+" if no current_test:
+"   Can't run any tests; warn user about it.
+" else:
+"   run current_test
 function! RunTest() abort
     let save_makeprg=&makeprg
     if !exists('g:tdd_current_test')
