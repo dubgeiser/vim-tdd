@@ -1,0 +1,36 @@
+*tdd.txt* Plugin leveraging |compiler| and |make| to run tests and report.
+
+Author: Per Juchtmans <https://dubgeiser.github.io>
+License: http://sam.zoy.org/wtfpl/COPYING
+
+
+INTRODUCTION                                                             *tdd*
+
+The basis for Vim's compile/eval system is |make|.  It runs some task(s) and
+puts the results in the quickfix window.  By default, Vim uses the command
+line tool 'make' as its build tool, but by using |compiler| you can switch
+this, and the associated error messages.
+There are a lot of built-in compilers and you can roll your own, which is what
+this plugin does; it configures Vim's build system to run tests and report the
+results back to the |quickfix| window.
+
+
+USAGE                                                              *tdd-usage*
+
+tdd comes with some predefined settings for running tests, mainly to support
+PHPUnit and PyUnit.
+
+
+COMMANDS                                                        *tdd-commands*
+
+                                                                    *:RunTest*
+:RunTest        Run the current test.  If it is not defined, try to determine
+                the current test.
+
+                                                                    *:SetTest*
+:SetTest        Set the current file in the current buffer as the current
+                test.
+
+
+
+ vim:tw=78:et:ft=help:norl:
